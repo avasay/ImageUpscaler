@@ -1,0 +1,110 @@
+:root[b-ypke7wpds0] {
+    --primary-color: #2563eb;
+    --secondary-color: #3b82f6;
+    --accent-color: #60a5fa;
+    --background-color: #f8fafc;
+    --text-color: #1e293b;
+    --border-color: #e2e8f0;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+}
+
+.page[b-ypke7wpds0] {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+main[b-ypke7wpds0] {
+    flex: 1;
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+.top-row[b-ypke7wpds0] {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    padding: 1rem 2rem;
+    box-shadow: 0 2px 4px var(--shadow-color);
+    position: relative;
+    z-index: 1000;
+    justify-content: space-between;
+    height: 4rem;
+    display: flex;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.top-row[b-ypke7wpds0]  a,
+.top-row[b-ypke7wpds0]  .btn-link {
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 1.1rem;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    transition: all 0.2s ease;
+}
+
+.top-row[b-ypke7wpds0]  a:hover,
+.top-row[b-ypke7wpds0]  .btn-link:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-1px);
+}
+
+article.content[b-ypke7wpds0] {
+    padding: 2rem;
+    border-radius: 1rem;
+    background: white;
+    box-shadow: 0 4px 6px var(--shadow-color);
+    margin-top: 2rem;
+    transition: all 0.3s ease;
+}
+
+article.content:hover[b-ypke7wpds0] {
+    box-shadow: 0 8px 12px var(--shadow-color);
+}
+
+@media (max-width: 640.98px) {
+    .top-row[b-ypke7wpds0] {
+        justify-content: space-between;
+    }
+
+    .top-row[b-ypke7wpds0]  a, .top-row[b-ypke7wpds0]  .btn-link {
+        margin-left: 0;
+    }
+}
+
+@media (min-width: 641px) {
+    .page[b-ypke7wpds0] {
+        flex-direction: row;
+    }
+
+    .sidebar[b-ypke7wpds0] {
+        width: 250px;
+        height: 100vh;
+        position: sticky;
+        top: 0;
+    }
+
+    .top-row[b-ypke7wpds0] {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+    }
+
+    .top-row.auth[b-ypke7wpds0]  a:first-child {
+        flex: 1;
+        text-align: right;
+        width: 0;
+    }
+
+    .top-row[b-ypke7wpds0], article[b-ypke7wpds0] {
+        padding-left: 2rem !important;
+        padding-right: 1.5rem !important;
+    }
+}

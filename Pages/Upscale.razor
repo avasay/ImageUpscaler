@@ -1,0 +1,594 @@
+@page "/"
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Web
+@using System.IO
+@using System.Text
+@using ImageEnhancerPwa.Client.Models
+@using Microsoft.JSInterop
+@using System.Linq
+
+@inject IJSRuntime JSRuntime
+
+<div class="app-header">
+    <h1 class="gradient-text">Image Upscaler & Sharpener</h1>
+    <p class="text-muted">Upload JPG, PNG, or GIF images to upscale (2x/4x) and sharpen using HTML5 Canvas.</p>
+</div>
+
+<div class="text-center mb-4">
+    <label for="formFileMultiple" class="btn btn-primary">
+        📁 Browse Files
+    </label>
+    <InputFile id="formFileMultiple" multiple OnChange="HandleFileSelection"
+               accept=".jpg,.jpeg,.png,.gif" class="form-control"
+               disabled="@isProcessing" />
+    <small class="d-block text-muted mt-2">Max 10 files, 10MB each</small>
+</div>
+
+@if (uploadedFiles.Any())
+{
+    <div class="mb-3 text-center">
+        <h3>Selected Files (@uploadedFiles.Count):</h3>
+        <ul>
+            @foreach (var file in uploadedFiles)
+            {
+                <li>@file.Name (@FormatBytes(file.Size))</li>
+            }
+        </ul>
+    </div>
+
+    <div class="row mb-4 justify-content-center settings-panel">
+        <div class="col-md-auto mb-3 mb-md-0">
+            <label for="upscaleFactor" class="form-label">Upscale Factor:</label>
+            <select id="upscaleFactor" @bind="selectedUpscaleFactor" class="form-select" disabled="@isProcessing">
+                <option value="2">2x</option>
+                <option value="4">4x</option>
+            </select>
+        </div>
+        <div class="col-md-auto mb-3 mb-md-0">
+            <label for="sharpenLevel" class="form-label">Sharpen Setting:</label>
+            <select id="sharpenLevel" @bind="selectedSharpenLevel" class="form-select" disabled="@isProcessing">
+                @for (int i = 0; i <= 10; i++)
+                {
+                    <option value="@i">Level @i @(i == 0 ? "(None)" : i == 10 ? "(Max)" : "")</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-auto align-self-end">
+             <button class="btn btn-primary" @onclick="ProcessImages" disabled="@(isProcessing || !uploadedFiles.Any())">
+                @if (isProcessing)
+                {
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    <span> Processing (@(processedImages.Count(img => !string.IsNullOrEmpty(img.ProcessedDataUrl) || img.ErrorMessage != null)) / @uploadedFiles.Count)...</span>
+                }
+                else
+                {
+                    <span>🚀 Upscale & Enhance</span>
+                }
+            </button>
+        </div>
+    </div>
+}
+else if (isProcessing) {
+     <div class="alert alert-info">Processing...</div>
+}
+
+@if (processedImages.Any())
+{
+    <hr />
+    <div class="d-flex justify-content-between align-items-center mb-2">
+         <h2 class="text-center">Results</h2>
+         <button class="btn btn-success" @onclick="DownloadAllFiles"
+                 disabled="@(isProcessing || processedImages.All(p => p.IsProcessing || string.IsNullOrEmpty(p.ProcessedDataUrl)))">
+             Download All (Individual Files)
+         </button>
+    </div>
+
+    @foreach (var imageInfo in processedImages.OrderBy(f => f.OriginalFileName))
+    {
+        <div class="card mb-3 fade-in">
+            <div class="card-header">
+                @imageInfo.OriginalFileName
+                @if (!string.IsNullOrEmpty(imageInfo.ProcessedFileName)) {
+                    <span> -> @imageInfo.ProcessedFileName</span>
+                }
+            </div>
+            <div class="card-body">
+                 @if (imageInfo.IsProcessing) {
+                    <div class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Processing...</span>
+                        </div>
+                        <p>Processing...</p>
+                    </div>
+                }
+                else if (!string.IsNullOrEmpty(imageInfo.ErrorMessage))
+                {
+                     <div class="alert alert-danger">
+                         Error processing this image: @imageInfo.ErrorMessage
+                     </div>
+                }
+                else if (!string.IsNullOrEmpty(imageInfo.ProcessedDataUrl))
+                {
+                    <div class="row">
+                        <div class="col-md-6 text-center">
+                            <h5>Original</h5>
+                            <img src="@imageInfo.OriginalDataUrl" class="img-fluid img-thumbnail mb-2" alt="Original @imageInfo.OriginalFileName" style="max-height: 400px;" />
+                            <small class="d-block text-muted mb-2">Size: @FormatBytes(imageInfo.OriginalFileSize)</small>
+                        </div>
+                        <div class="col-md-6 text-center">
+                            <h5>Processed (@selectedUpscaleFactor x, Sharpen @selectedSharpenLevel)</h5>
+                            <img src="@imageInfo.ProcessedDataUrl" class="img-fluid img-thumbnail mb-2" alt="Processed @imageInfo.ProcessedFileName" style="max-height: 400px;" />
+                            @if (imageInfo.ProcessedFileSize > 0) {
+                                <small class="d-block text-muted mb-2">Size: @FormatBytes(imageInfo.ProcessedFileSize)</small>
+                            }
+                            <button class="btn btn-secondary btn-sm" @onclick="() => DownloadFile(imageInfo)" disabled="@isProcessing">
+                                Download This File
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+}
+
+@code {
+    private List<IBrowserFile> uploadedFiles = new List<IBrowserFile>();
+    private List<ImageFileInfo> processedImages = new List<ImageFileInfo>();
+    private int selectedUpscaleFactor = 2;
+    private int selectedSharpenLevel = 2;
+    private bool isProcessing = false;
+    private const int MAX_FILES = 10;
+    private const long MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+
+    private async Task HandleFileSelection(InputFileChangeEventArgs e)
+    {
+        if (isProcessing) return;
+        var files = e.GetMultipleFiles(MAX_FILES);
+        await ProcessUploadedFiles(files);
+    }
+
+    private async Task ProcessUploadedFiles(IEnumerable<IBrowserFile> files)
+    {
+        var validFiles = files
+            .Where(file => file.Size <= MAX_FILE_SIZE && IsValidImageType(file.ContentType))
+            .Take(MAX_FILES)
+            .ToList();
+
+        if (validFiles.Any())
+        {
+            uploadedFiles.Clear();
+            processedImages.Clear();
+            uploadedFiles.AddRange(validFiles);
+            await InvokeAsync(StateHasChanged);
+        }
+        else
+        {
+            Console.WriteLine("No valid files found among uploaded items.");
+        }
+    }
+
+     private bool IsValidImageType(string contentType) {
+        return contentType.Equals("image/jpeg", StringComparison.OrdinalIgnoreCase) ||
+               contentType.Equals("image/png", StringComparison.OrdinalIgnoreCase) ||
+               contentType.Equals("image/gif", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private async Task ProcessImages()
+    {
+        if (!uploadedFiles.Any()) return;
+
+        isProcessing = true;
+        processedImages.Clear();
+        await InvokeAsync(StateHasChanged);
+
+        foreach (var file in uploadedFiles) {
+             processedImages.Add(new ImageFileInfo {
+                 OriginalFileName = file.Name,
+                 OriginalFileType = file.ContentType,
+                 IsProcessing = true,
+                 OriginalFileSize = file.Size
+             });
+        }
+        await InvokeAsync(StateHasChanged);
+
+        var processingTasks = new List<Task>();
+        foreach (var file in uploadedFiles)
+        {
+            processingTasks.Add(ProcessSingleFile(file));
+        }
+
+        try
+        {
+            await Task.WhenAll(processingTasks);
+        }
+        finally
+        {
+            isProcessing = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task ProcessSingleFile(IBrowserFile file)
+    {
+         var imageInfo = processedImages.FirstOrDefault(i => i.OriginalFileName == file.Name);
+         if (imageInfo == null) return;
+
+         // Reset any previous state
+         imageInfo.ProcessedDataUrl = null;
+         imageInfo.ErrorMessage = null;
+
+        try
+        {
+            using var memoryStream = new MemoryStream();
+            await file.OpenReadStream(MAX_FILE_SIZE).CopyToAsync(memoryStream);
+            var fileBytes = memoryStream.ToArray();
+            string base64Data = Convert.ToBase64String(fileBytes);
+
+            string originalMimeType = file.ContentType;
+             if (originalMimeType.Equals("image/gif", StringComparison.OrdinalIgnoreCase)) {
+                 originalMimeType = "image/png";
+             }
+
+            imageInfo.OriginalDataUrl = $"data:{originalMimeType};base64,{base64Data}";
+
+            string outputMimeType = imageInfo.OriginalFileType.Equals("image/png", StringComparison.OrdinalIgnoreCase)
+                                        ? "image/png"
+                                        : "image/jpeg";
+
+             imageInfo.IsProcessing = true;
+             await InvokeAsync(StateHasChanged);
+
+            // Pass the selectedSharpenLevel (0-10) directly
+            string processedDataUrl = await JSRuntime.InvokeAsync<string>(
+                "imageProcessor.processImage",
+                new object[] {
+                    imageInfo.OriginalDataUrl,
+                    selectedUpscaleFactor,
+                    selectedSharpenLevel,
+                    outputMimeType
+                });
+
+            var fileExt = Path.GetExtension(file.Name);
+             if (outputMimeType == "image/png" && !fileExt.Equals(".png", StringComparison.OrdinalIgnoreCase)) fileExt = ".png";
+             if (outputMimeType == "image/jpeg" && !fileExt.Equals(".jpg", StringComparison.OrdinalIgnoreCase) && !fileExt.Equals(".jpeg", StringComparison.OrdinalIgnoreCase)) fileExt = ".jpg";
+
+            var fileNameWithoutExt = Path.GetFileNameWithoutExtension(file.Name);
+            string sharpenText = selectedSharpenLevel == 0 ? "no-sharpen" : $"sharpen{selectedSharpenLevel}";
+            imageInfo.ProcessedFileName = $"{fileNameWithoutExt}_{selectedUpscaleFactor}x_{sharpenText}{fileExt}";
+            imageInfo.ProcessedDataUrl = processedDataUrl;
+            imageInfo.ErrorMessage = null;
+
+            // Calculate processed file size from base64 data URL
+            if (!string.IsNullOrEmpty(imageInfo.ProcessedDataUrl) && imageInfo.ProcessedDataUrl.Contains(","))
+            {
+                try {
+                    string base64Part = imageInfo.ProcessedDataUrl.Split(',')[1];
+                    byte[] processedBytes = Convert.FromBase64String(base64Part);
+                    imageInfo.ProcessedFileSize = processedBytes.Length;
+                } catch (FormatException formatEx) {
+                     Console.Error.WriteLine($"Error decoding base64 for {file.Name}: {formatEx.Message}");
+                     // Optionally set an error or leave size as 0
+                }
+            }
+        }
+        catch (JSException jsEx) {
+             Console.Error.WriteLine($"JS Error processing {file.Name}: {jsEx.Message}");
+             imageInfo.ErrorMessage = $"JavaScript processing failed: {jsEx.Message}";
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error processing {file.Name}: {ex.Message}");
+            imageInfo.ErrorMessage = $"Internal error: {ex.Message}";
+        }
+         finally
+        {
+             imageInfo.IsProcessing = false;
+             await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task DownloadFile(ImageFileInfo imageInfo)
+    {
+        if (!string.IsNullOrEmpty(imageInfo.ProcessedDataUrl))
+        {
+             bool success = await JSRuntime.InvokeAsync<bool>(
+                "imageProcessor.downloadDataUrl",
+                new object[] {
+                    imageInfo.ProcessedFileName,
+                    imageInfo.ProcessedDataUrl
+                });
+             if (!success) {
+                 Console.Error.WriteLine($"Failed to initiate download for {imageInfo.ProcessedFileName}");
+             }
+        }
+    }
+
+    private async Task DownloadAllFiles()
+    {
+        // Ensure we're not already processing
+        if (isProcessing) return;
+
+        try
+        {
+            var filesToDownload = processedImages
+                .Where(img => !img.IsProcessing && !string.IsNullOrEmpty(img.ProcessedDataUrl))
+                .Select(img => new
+                {
+                    filename = img.ProcessedFileName,
+                    dataUrl = img.ProcessedDataUrl
+                })
+                .ToList();
+
+            if (filesToDownload.Any())
+            {
+                isProcessing = true;
+                StateHasChanged();
+
+                await JSRuntime.InvokeAsync<bool>(
+                    "imageProcessor.downloadMultipleFiles",
+                    new object[] { filesToDownload });
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error downloading all files: {ex.Message}");
+        }
+        finally
+        {
+            isProcessing = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private string FormatBytes(long bytes)
+    {
+        string[] suffixes = { "B", "KB", "MB", "GB", "TB" };
+        int i = 0;
+        double dblSByte = bytes;
+        while (dblSByte >= 1024 && i < suffixes.Length - 1)
+        {
+            dblSByte /= 1024;
+            i++;
+        }
+        return $"{dblSByte:0.##} {suffixes[i]}";
+    }
+
+    private class FileInfo
+    {
+        public string Name { get; set; }
+        public long Size { get; set; }
+        public string Type { get; set; }
+    }
+
+    private class DroppedFile : IBrowserFile
+    {
+        private readonly IJSRuntime _jsRuntime;
+        private readonly object _fileRef;
+        
+        public string Name { get; }
+        public string ContentType { get; }
+        public long Size { get; }
+        public DateTimeOffset LastModified => DateTimeOffset.Now;
+
+        public DroppedFile(string name, string contentType, long size, object fileRef, IJSRuntime jsRuntime)
+        {
+            Name = name;
+            ContentType = contentType;
+            Size = size;
+            _fileRef = fileRef;
+            _jsRuntime = jsRuntime;
+        }
+
+        public Stream OpenReadStream(long maxAllowedSize = 512000, CancellationToken cancellationToken = default)
+        {
+            if (Size > maxAllowedSize)
+                throw new InvalidOperationException($"File size ({Size} bytes) exceeds the maximum allowed size ({maxAllowedSize} bytes)");
+
+
+            try
+            {
+                var streamRef = _jsRuntime.InvokeAsync<byte[]>("imageProcessor.createStreamReference", new object[] { _fileRef }).GetAwaiter().GetResult();
+                return new MemoryStream(streamRef);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Failed to read file stream: {ex.Message}");
+            }
+        }
+    }
+}
+
+<style>
+    :root {
+        --primary-color: #2563eb;
+        --secondary-color: #3b82f6;
+        --accent-color: #60a5fa;
+        --background-color: #f8fafc;
+        --text-color: #1e293b;
+        --border-color: #e2e8f0;
+        --shadow-color: rgba(0, 0, 0, 0.1);
+    }
+
+    .app-header {
+        text-align: center;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+    }
+
+    .gradient-text {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 700;
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .drop-zone {
+        position: relative;
+        border: 2px dashed var(--border-color);
+        border-radius: 1rem;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        background: white;
+        cursor: pointer;
+    }
+
+    .drop-zone.drag-active {
+        border-color: var(--primary-color);
+        border-width: 3px;
+        background: linear-gradient(to bottom right, white, var(--accent-color, #e6f2ff));
+        transform: scale(1.02);
+        box-shadow: 0 8px 16px var(--shadow-color);
+        animation: pulse 1s infinite;
+    }
+
+    @@keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4); }
+        70% { box-shadow: 0 0 0 10px rgba(37, 99, 235, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
+    }
+
+    .drop-zone:hover,
+    .drop-zone:focus-within {
+        border-color: var(--primary-color);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px var(--shadow-color);
+        background: linear-gradient(to bottom right, white, var(--background-color));
+    }
+    
+    .drop-zone:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 4px var(--shadow-color);
+    }
+
+    .upload-icon {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        display: block;
+    }
+
+    .upload-text {
+        margin-bottom: 1rem;
+    }
+
+    .upload-text strong {
+        color: var(--primary-color);
+    }
+
+    .form-control {
+        display: none; /* Hide the actual file input */
+    }
+
+    .form-select {
+        border: 1px solid var(--border-color);
+        border-radius: 0.5rem;
+        padding: 0.75rem;
+        appearance: none;
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 1rem center;
+        background-size: 1em;
+    }
+
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        border: none;
+        color: white;
+    }
+
+    .btn-success {
+        background: linear-gradient(135deg, #059669, #10b981);
+        border: none;
+        color: white;
+    }
+
+    .btn:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px var(--shadow-color);
+    }
+
+    .card {
+        background: white;
+        border-radius: 1rem;
+        border: none;
+        box-shadow: 0 4px 6px var(--shadow-color);
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+
+    .card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 12px var(--shadow-color);
+    }
+
+    .card-header {
+        background: var(--background-color);
+        border-bottom: 1px solid var(--border-color);
+        padding: 1rem 1.5rem;
+        font-weight: 500;
+    }
+
+    .img-thumbnail {
+        border-radius: 0.75rem;
+        border: none;
+        box-shadow: 0 2px 4px var(--shadow-color);
+        transition: all 0.3s ease;
+    }
+
+    .img-thumbnail:hover {
+        transform: scale(1.02);
+    }
+
+    .spinner-border {
+        color: var(--primary-color);
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-in {
+        animation: fadeIn 0.3s ease-out forwards;
+    }
+
+    /* Modern list styling */
+    ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    ul li {
+        background: var(--background-color);
+        padding: 0.75rem 1rem;
+        border-radius: 0.5rem;
+        margin-bottom: 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+    ul li:hover {
+        transform: translateX(5px);
+        background: white;
+        box-shadow: 0 2px 4px var(--shadow-color);
+    }
+</style>
+
+<style>
+    .settings-panel {
+        background-color: var(--background-color);
+        padding: 1.5rem;
+        border-radius: 0.75rem;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+</style>
