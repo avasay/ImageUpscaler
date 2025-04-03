@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ImageEnhancerPwa")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3740ba55bd543365a820788a55069cabc60f095a")]
 [assembly: System.Reflection.AssemblyProductAttribute("ImageEnhancerPwa")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ImageEnhancerPwa")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
