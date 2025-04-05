@@ -1,6 +1,10 @@
 ﻿self.assetsManifest = {
   "assets": [
     {
+      "hash": "sha256-47DEQpj8HBSa+\/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=",
+      "url": ".nojekyll"
+    },
+    {
       "hash": "sha256-JOZWd9XYwDyrwjSB0PVTcc602GisYED21qQUCSMlGtI=",
       "url": "css\/app.css"
     },
@@ -25,7 +29,7 @@
       "url": "icon-512.png"
     },
     {
-      "hash": "sha256-wIBMrT9kUm8ZpMovf0qARzuXdn2nPaxQAcmXDxpOkTY=",
+      "hash": "sha256-DvDizWljHGXdfVX9ZOElkHN86OJvl35Iai\/abcLzmsc=",
       "url": "index.html"
     },
     {
@@ -849,17 +853,17 @@
       "url": "_framework\/icudt_no_CJK.dat"
     },
     {
-      "hash": "sha256-CxZ\/N5NsvZZUoiEAkzRAKY\/zjh8KCM03xlomD9vDT1k=",
+      "hash": "sha256-jqbboNRAW3AoDfEd03L6VZMhgJKpRi8WafNnBne+M6U=",
       "url": "_framework\/ImageEnhancerPwa.wasm"
     },
     {
-      "hash": "sha256-uO04n9ssX+v31CrLhzjTVzxtTMlyhHUafuLzZyYJwB4=",
+      "hash": "sha256-xdei8Bjza8v4Xlm5gaYKqtNnur1OC1G9SIw24wc1zYk=",
       "url": "_framework\/ImageEnhancerPwa.pdb"
     },
     {
-      "hash": "sha256-9RK2VqXoTM6srbWPXWnpRlnfv857leTprJwETh14hUI=",
+      "hash": "sha256-HUl2APFMInKjCn5AOxGc3b\/dn8RPno+fFEHi18K1NbQ=",
       "url": "_framework\/blazor.boot.json"
     }
   ],
-  "version": "OFpwAoXg"
+  "version": "hZmHRgxh"
 };

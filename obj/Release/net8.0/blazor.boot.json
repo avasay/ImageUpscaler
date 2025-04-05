@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "ImageEnhancerPwa",
   "resources": {
-    "hash": "sha256-GM4i2L1EaDxHZJc8PrnEXgsDg1bOImERze7OOR8cAko=",
+    "hash": "sha256-OmfJQYtjdFZy8TFD2l9rgnWIu+aJCAZcft49vCRsrPE=",
     "jsModuleNative": {
       "dotnet.native.8.0.10.yatax25khq.js": "sha256-QVxMlY7ohmjgde/bZMA0dlWDAeuUP+tEfkiSdg4DFcE="
     },
@@ -208,10 +208,10 @@
       "mscorlib.wasm": "sha256-KvqZaNpjwhrOuzE4b4aMFsI+VUTyiWfoDI4zn4l9BM8=",
       "netstandard.wasm": "sha256-v+s7sWxtOM6bnOvC0jFrtnm6uMfbDymwl2nHNgbS2LM=",
       "System.Private.CoreLib.wasm": "sha256-pklll63uFQoY6vaD3vbluS9osYiJWLLLmob1yHFgepI=",
-      "ImageEnhancerPwa.wasm": "sha256-G2Zj3Ijbrep4K5Sc0HoObKkhz9UXE1YOvNQn+swHD/g="
+      "ImageEnhancerPwa.wasm": "sha256-ZdkJtOHMYV9uwSfcrVuo7KmjbOG4FYNuX/lG9kY5RRA="
     },
     "pdb": {
-      "ImageEnhancerPwa.pdb": "sha256-0A452aw2+yRJUeb6LaiBemhhqrGii+hd6RsyXdCeH14="
+      "ImageEnhancerPwa.pdb": "sha256-sjRwJ/1WhVNp6smOfo4QltuOnGzkD6Trr9MhrMmvvpY="
     }
   },
   "cacheBootResources": true,

@@ -21,6 +21,10 @@
       "PackagePath": "staticwebassets\\service-worker.js"
     },
     {
+      "Id": "C:\\Users\\ALEJANDRIO.VASAY\\source\\repos\\ImageEnhancerPwa\\wwwroot\\.nojekyll",
+      "PackagePath": "staticwebassets\\.nojekyll"
+    },
+    {
       "Id": "C:\\Users\\ALEJANDRIO.VASAY\\source\\repos\\ImageEnhancerPwa\\wwwroot\\css\\app.css",
       "PackagePath": "staticwebassets\\css\\app.css"
     },

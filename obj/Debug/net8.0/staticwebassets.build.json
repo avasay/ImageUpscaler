@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "JPYIIOC4sk4n2hfti+8dOyZSLXm9oiCt/XRy7nHwyf8=",
+  "Hash": "sOnPTh1YMS+qgjm8iv0Ji/lOWYY6siBjXuZtI5I697w=",
   "Source": "ImageEnhancerPwa",
   "BasePath": "/",
   "Mode": "Root",
@@ -7881,6 +7881,25 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\service-worker.published.js"
+    },
+    {
+      "Identity": "C:\\Users\\ALEJANDRIO.VASAY\\source\\repos\\ImageEnhancerPwa\\wwwroot\\.nojekyll",
+      "SourceId": "ImageEnhancerPwa",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\ALEJANDRIO.VASAY\\source\\repos\\ImageEnhancerPwa\\wwwroot\\",
+      "BasePath": "/",
+      "RelativePath": ".nojekyll",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\.nojekyll"
     },
     {
       "Identity": "C:\\Users\\ALEJANDRIO.VASAY\\source\\repos\\ImageEnhancerPwa\\wwwroot\\css\\app.css",

@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "ImageEnhancerPwa",
   "resources": {
-    "hash": "sha256-G/Fa6KA3VcjgHUfmWIzaEq5uQq7HS5rZaxX8iPRzGpY=",
+    "hash": "sha256-RGGM6LmXqz5j9LxtUdj1PfRTfitd9tudaq5MwjTTqBc=",
     "jsModuleNative": {
       "dotnet.native.8.0.10.yatax25khq.js": "sha256-QVxMlY7ohmjgde/bZMA0dlWDAeuUP+tEfkiSdg4DFcE="
     },
@@ -17,7 +17,7 @@
       "icudt_no_CJK.dat": "sha256-L7sV7NEYP37/Qr2FPCePo5cJqRgTXRwGHuwF5Q+0Nfs="
     },
     "assembly": {
-      "ImageEnhancerPwa.wasm": "sha256-G2Zj3Ijbrep4K5Sc0HoObKkhz9UXE1YOvNQn+swHD/g=",
+      "ImageEnhancerPwa.wasm": "sha256-ZdkJtOHMYV9uwSfcrVuo7KmjbOG4FYNuX/lG9kY5RRA=",
       "Microsoft.AspNetCore.Components.wasm": "sha256-m6ubkbeBhy8FI2gLhxfC5NNsos2u81rPkAaJGWETw9Q=",
       "Microsoft.AspNetCore.Components.Web.wasm": "sha256-9Pe2YRHVqjJ2MmZm+5WxfVgmApfIku1SmN+vPqHU+z8=",
       "Microsoft.AspNetCore.Components.WebAssembly.wasm": "sha256-ePI2+Aems/VB/WFDA481eKNhaG9F6F89Nzqxm7WX0eE=",

@@ -2068,3 +2068,6 @@ C:\Users\ALEJANDRIO.VASAY\source\repos\ImageEnhancerPwa\obj\Debug\net8.0\ImageEn
 C:\Users\ALEJANDRIO.VASAY\source\repos\ImageEnhancerPwa\obj\Debug\net8.0\refint\ImageEnhancerPwa.dll
 C:\Users\ALEJANDRIO.VASAY\source\repos\ImageEnhancerPwa\obj\Debug\net8.0\ImageEnhancerPwa.pdb
 C:\Users\ALEJANDRIO.VASAY\source\repos\ImageEnhancerPwa\obj\Debug\net8.0\ref\ImageEnhancerPwa.dll
+C:\Users\ALEJANDRIO.VASAY\source\repos\ImageEnhancerPwa\bin\Debug\net8.0\docs\sample-data\weather.json
+C:\Users\ALEJANDRIO.VASAY\source\repos\ImageEnhancerPwa\bin\Debug\net8.0\docs\_framework\blazor.boot.json
+C:\Users\ALEJANDRIO.VASAY\source\repos\ImageEnhancerPwa\obj\Debug\net8.0\ImageEnhancerPwa.sourcelink.json
